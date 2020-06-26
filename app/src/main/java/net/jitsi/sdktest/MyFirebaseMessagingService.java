@@ -120,9 +120,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 String callerId = caller.getString("_id");
                 Log.d("msg",callerId);
                 if (msg.toString().equals("CALL_MADE")) {
-                    Intent dialogIntent = new Intent(context, CallingScreen.class);
+                    /* Intent dialogIntent = new Intent(context, CallingScreen.class);
                     dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(dialogIntent);
+                    startActivity(dialogIntent);*/
+
+                    Intent dialogIntent = new Intent(this, CallingScreen.class);
+                    dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    dialogIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    getApplicationContext().startActivity(dialogIntent);
 
                     /*Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
                     assert launchIntent != null;
