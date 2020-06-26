@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="50dp"
+        tools:context=".MainActivity">
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/idle"
+            android:textSize="35sp"
+            android:textColor="#000"
+            android:layout_centerHorizontal="true"
+            android:paddingTop="25dp"
+            android:id="@+id/doctor"
+
+            />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/idle"
+        android:textSize="12sp"
+        android:textColor="#000"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="25dp"
+        android:layout_below="@+id/callbutton"
+        android:id="@+id/et_token"
+
+        />
+
+    <Button
+        android:id="@+id/callbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/call_dr" />
+
+
+</RelativeLayout>

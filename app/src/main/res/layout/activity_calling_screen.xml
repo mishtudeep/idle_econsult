@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/incomming_call_bg"
+    android:orientation="vertical"
+    android:padding="50dp"
+    tools:context=".CallingScreen">
+
+    <TextView
+        android:id="@+id/textview1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Incoming Call"
+        android:textSize="35sp"
+        android:textColor="#FFFFFF"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="100dp"
+
+        />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Idle"
+        android:layout_below="@id/textview1"
+        android:textSize="35sp"
+        android:textColor="#FFFFFF"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="25dp"
+        android:id="@+id/doctor"
+
+        />
+
+
+    <RelativeLayout
+        android:id="@+id/idd"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="70dp">
+
+        <TextView
+            android:id="@+id/fake"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"/>
+
+
+
+        <Button
+            android:id="@+id/call_end"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_marginRight="50dp"
+            android:background="@drawable/call_end_button"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@id/fake"
+
+            />
+
+
+        <Button
+            android:id="@+id/call_received"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:layout_marginLeft="50dp"
+            android:background="@drawable/call_received_button"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_toRightOf="@id/fake"
+            />
+
+
+
+
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>
