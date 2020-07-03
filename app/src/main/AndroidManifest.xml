@@ -16,6 +16,7 @@
  Needed only if your calling app reads numbers from the `PHONE_STATE`
          intent action.
     -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
@@ -54,11 +55,11 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_calling_screen"
             android:theme="@style/FullscreenTheme">
-            <intent-filter>
-                <!-- Note: these actions are notification actions -->
+           <!-- <intent-filter>
+                &lt;!&ndash; Note: these actions are notification actions &ndash;&gt;
                 <action android:name="VIDEO_CALLING" />
                 <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
         <activity android:name=".MainActivity">
             <intent-filter>

@@ -17,7 +17,9 @@
 package net.jitsi.sdktest;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -39,6 +41,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.telecom.Call;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -62,6 +66,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static net.jitsi.sdktest.app.getApplicationCntx;
@@ -98,6 +103,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
         String channelId = "Default";
 
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        assert powerManager != null;
+        boolean result = powerManager.isDeviceIdleMode();
+
+        Log.e("result",result + " ");
+        if (!result) {
+            @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MH24_SCREENLOCK");
+            wl.acquire(10000);
+            @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wl_cpu = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MH24_SCREENLOCK");
+            wl_cpu.acquire(10000);
+        }
+
         if (remoteMessage.getNotification() != null) {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                     .setSmallIcon(R.mipmap.ic_launcher)
@@ -114,20 +131,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
             try {
-                Map data =  remoteMessage.getData();
+                Map data = remoteMessage.getData();
                 Object msg = data.get("msg");
                 JSONObject caller = new JSONObject(data.get("caller").toString());
                 String callerId = caller.getString("_id");
-                Log.d("msg",callerId);
+                Log.d("msg", callerId);
                 if (msg.toString().equals("CALL_MADE")) {
                     /* Intent dialogIntent = new Intent(context, CallingScreen.class);
                     dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(dialogIntent);*/
 
-                    Intent dialogIntent = new Intent(this, CallingScreen.class);
+                    Intent dialogIntent = new Intent(context, CallingScreen.class);
                     dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     dialogIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    getApplicationContext().startActivity(dialogIntent);
+                    context.startActivity(dialogIntent);
 
                     /*Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
                     assert launchIntent != null;
@@ -152,13 +169,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     manager.notify(0, builder.build());
 
 
+                    if (isAppRunning(context,"net.jitsi.sdktest")) {
+                        //getIndividual(callerId);
 
-                  // getIndividual(callerId);
+                        Log.e("isAppRunning","isAppRunning");
+                        createNotification("Dr. " + " is calling", "", callerId);
+                    }
 
-                }else if(msg.toString().equals("CALL_REJECTED")){
-                    sendMessageToMainActivity(context,remoteMessage.getData().toString());
-                }else if(msg.toString().equals("CALL_ACCEPTED")){
-                    sendMessageToMainActivity(context,remoteMessage.getData().toString());
+                } else if (msg.toString().equals("CALL_REJECTED")) {
+                    sendMessageToMainActivity(context, remoteMessage.getData().toString());
+                } else if (msg.toString().equals("CALL_ACCEPTED")) {
+                    sendMessageToMainActivity(context, remoteMessage.getData().toString());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -201,12 +222,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private NotificationManager notifManager;
-    public void createNotification(String aMessage,String picture,String doctorID) {
+
+    public void createNotification(String aMessage, String picture, String doctorID) {
         final int NOTIFY_ID = 1002;
-        KeyguardManager keyguardManager = (KeyguardManager)getSystemService(Activity.KEYGUARD_SERVICE);
+        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Activity.KEYGUARD_SERVICE);
         Boolean isLocked = keyguardManager.isDeviceLocked();
-        if(isLocked){
-            aMessage+=".Please unlock device";
+        if (isLocked) {
+            aMessage += ".Please unlock device";
         }
 
         // There are hardcoding only for show it's just strings
@@ -220,7 +242,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         if (notifManager == null) {
             notifManager =
-                    (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -241,16 +263,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
 
-            Intent receiveCallAction = new Intent(getApplicationCntx(), MainActivity.class);
+            Intent receiveCallAction = new Intent(getApplicationCntx(), CallingScreen.class);
             receiveCallAction.putExtra("message", aMessage);
             receiveCallAction.setAction("RECEIVE_CALL");
 
-            Intent cancelCallAction = new Intent(getApplicationCntx(), MainActivity.class);
+            Intent cancelCallAction = new Intent(getApplicationCntx(), CallingScreen.class);
             cancelCallAction.putExtra("message", aMessage);
             cancelCallAction.setAction("CANCEL_CALL");
 
-            PendingIntent receiveCallPendingIntent = PendingIntent.getBroadcast(getApplicationCntx(), 1200, receiveCallAction, PendingIntent.FLAG_UPDATE_CURRENT);
-            PendingIntent cancelCallPendingIntent = PendingIntent.getBroadcast(getApplicationCntx(), 1201, cancelCallAction, PendingIntent.FLAG_UPDATE_CURRENT);
+           // PendingIntent receiveCallPendingIntent = PendingIntent.getBroadcast(getApplicationCntx(), 1200, receiveCallAction, PendingIntent.FLAG_UPDATE_CURRENT);
+           // PendingIntent cancelCallPendingIntent = PendingIntent.getBroadcast(getApplicationCntx(), 1201, cancelCallAction, PendingIntent.FLAG_UPDATE_CURRENT);
+
+           PendingIntent receiveCallPendingIntent = PendingIntent.getActivity(getApplicationCntx(), 1200, receiveCallAction, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent cancelCallPendingIntent = PendingIntent.getActivity(getApplicationCntx(), 1201, cancelCallAction, PendingIntent.FLAG_UPDATE_CURRENT);
 
 //            try {
 //                URL url = new URL(picture);
@@ -266,12 +291,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .setAutoCancel(true)
                     .setContentIntent(receiveCallPendingIntent)
                     .setTicker(aMessage)
-                    .addAction(R.drawable.call_received, "Receive Call", receiveCallPendingIntent)
+                    .addAction(R.drawable.call_start_button, "Receive Call", receiveCallPendingIntent)
                     .addAction(R.drawable.call_end_button, "Cancel call", cancelCallPendingIntent)
 //                    .setLargeIcon()
                     .setAutoCancel(true)
                     .setTimeoutAfter(8000)
-                    .setSound(Uri.parse("android.resource://"+context.getPackageName()+"/"+R.raw.ringtone))
+                    .setSound(Uri.parse("android.resource://" + context.getPackageName() + "/" + R.raw.ringtone))
                     .setFullScreenIntent(receiveCallPendingIntent, true)
                     .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000});
         } else {
@@ -296,11 +321,29 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Notification notification = builder.build();
         notifManager.notify(NOTIFY_ID, notification);
     }
+
+
+    public boolean isAppRunning(final Context context, final String packageName) {
+        final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        assert activityManager != null;
+        final List<ActivityManager.RunningAppProcessInfo> procInfos = activityManager.getRunningAppProcesses();
+        if (procInfos != null)
+        {
+            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                if (processInfo.processName.equals(packageName)) {
+                    Log.e("isAppRunning===","isAppRunning");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void getIndividual(String individualID) {
         try {
 
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            final String url = "https://api.mefy.care/doctor/getDoctorDetails?_id="+individualID;
+            final String url = "https://api.mefy.care/doctor/getDoctorDetails?_id=" + individualID;
             RequestQueue queue = Volley.newRequestQueue(this);
 
 // Request a string response from the provided URL.
@@ -314,8 +357,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                                 JSONObject user = object.getJSONObject("registrationDetails");
                                 String username = user.getString("name");
                                 String image = user.getString("profileImage");
-                                final String ImagePath = "https://api.mefy.care/file/fileShow?fileId="+image+"&select=thumbnail";
-                                createNotification("Dr. "+username+" is calling",ImagePath,individualID);
+                                final String ImagePath = "https://api.mefy.care/file/fileShow?fileId=" + image + "&select=thumbnail";
+                                createNotification("Dr. " + username + " is calling", ImagePath, individualID);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
